@@ -20,3 +20,14 @@ C:\Repositories\Polynomial regression\Find_poly_3\Find_poly_3\obj\Debug\Find_pol
 C:\Repositories\Polynomial regression\Find_poly_3\Find_poly_3\obj\Debug\Find_poly_3.Form1.resources
 C:\Repositories\Polynomial regression\Find_poly_3\Find_poly_3\obj\Debug\Find_poly_3.Resources.resources
 C:\Repositories\Polynomial regression\Find_poly_3\Find_poly_3\obj\Debug\Find_poly_3.vbproj.GenerateResource.Cache
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\bin\Debug\Find_poly_3.exe.config
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\obj\Debug\Find_poly_3.exe
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\obj\Debug\Find_poly_3.xml
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\obj\Debug\Find_poly_3.pdb
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\obj\Debug\Find_poly_3.vbprojResolveAssemblyReference.cache
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\obj\Debug\Find_poly_3.Form1.resources
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\obj\Debug\Find_poly_3.Resources.resources
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\obj\Debug\Find_poly_3.vbproj.GenerateResource.Cache
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\bin\Debug\Find_poly_3.exe
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\bin\Debug\Find_poly_3.pdb
+C:\Repositories\Polynomial regression\polynomial-regression\Find_poly_3\Find_poly_3\bin\Debug\Find_poly_3.xml

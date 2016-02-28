@@ -7,33 +7,35 @@ Public Structure POINT
     Public x As Double
     Public y As Double
 End Structure
+'--------------------------------------------------------------------------------------------------
+' Polynomial regression In VB.net (Visual Studio 2015 Windows Desktop)
+'   SEE http :  //www.vbforums.com/showthread.php?311225-Polynomials-Resolved&highlight=polynomials
+'
+'--------------------------------------------------------------------------------------------------
 
 Public Class Form1
-    '   polynomial regression in VB.net (Visual Studio 2015 Windows Desktop)
-    '   SEE http :  //www.vbforums.com/showthread.php?311225-Polynomials-Resolved&highlight=polynomials
-    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
-        'Do something
+    Public P(33) As POINT   'Raw data
+    Public B(,) As Double   'Poly Coefficients
 
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Dim j As Integer
         Dim t() As POINT
-        Dim P(33) As POINT
 
         For j = 0 To 32
             P(j).x = j
             P(j).y = CInt(Math.Ceiling(Rnd() * 50)) + 1
         Next
-
         t = Trend(P, 5)
+        draw_chart1()
     End Sub
 
     Public Function Trend(Data() As POINT, ByVal Degree As Long) As POINT()
-
         'degree 1 = straight line y=a+bx
         'degree n = polynomials!!
 
         Dim a(,) As Double
         Dim Ai(,) As Double
-        Dim B(,) As Double
+
         Dim P(,) As Double
         Dim SigmaA() As Double
         Dim SigmaP() As Double
@@ -132,11 +134,9 @@ Public Class Form1
         Next
 
         MxMultiplyCV = Ret
-
     End Function
 
     Public Function MxInverse(Matrix(,) As Double) As Double(,)
-
         Dim i As Long
         Dim j As Long
         Dim Rows As Long
@@ -209,6 +209,62 @@ Public Class Form1
                 Matrix(i, j) = Matrix(i, j) / d
             Next
         Next
+    End Sub
 
+    Private Sub draw_chart1()
+        Dim hh As Integer
+        Dim poly_result As Double
+
+        Try
+            'Clear all series And chart areas so we can re-add them
+            Chart1.Series.Clear()
+            Chart1.ChartAreas.Clear()
+            Chart1.Titles.Clear()
+
+            Chart1.Series.Add("Series0")    'Input
+            Chart1.Series.Add("Series1")    'Poly line
+
+            Chart1.ChartAreas.Add("ChartArea0")
+            Chart1.Series(0).ChartArea = "ChartArea0"
+            Chart1.Series(1).ChartArea = "ChartArea0"
+
+            Chart1.Series(0).ChartType = DataVisualization.Charting.SeriesChartType.Line
+            Chart1.Series(1).ChartType = DataVisualization.Charting.SeriesChartType.Line
+
+            Chart1.Titles.Add("Polynomial regression")
+            Chart1.Titles(0).Font = New Font("Arial", 16, System.Drawing.FontStyle.Bold)
+
+            Chart1.Series(0).Name = "Input"
+            Chart1.Series(1).Name = "Poly"
+
+            Chart1.Series(0).Color = Color.Blue
+            Chart1.Series(1).Color = Color.Red
+
+            '----------- labels on-off ------------------
+            Chart1.Series(0).IsValueShownAsLabel = True
+
+            Chart1.Series(0).BorderWidth = 4
+            Chart1.Series(1).BorderWidth = 3
+
+            Chart1.ChartAreas("ChartArea0").AxisX.Minimum = 0
+            Chart1.ChartAreas("ChartArea0").AxisX.MinorTickMark.Enabled = True
+            Chart1.ChartAreas("ChartArea0").AxisY.MinorTickMark.Enabled = True
+            Chart1.ChartAreas("ChartArea0").AxisY2.MinorTickMark.Enabled = True
+
+            Chart1.ChartAreas("ChartArea0").AxisX.Title = "Debiet [Am3/s]"
+            Chart1.ChartAreas("ChartArea0").AxisY.Title = "Ptotaal [Pa]"
+            Chart1.ChartAreas("ChartArea0").AlignmentOrientation = DataVisualization.Charting.AreaAlignmentOrientations.Vertical
+
+            '-------------------Chart data ---------------------
+            For hh = 0 To 32
+                Chart1.Series(0).Points.AddXY(P(hh).x, P(hh).y)
+
+                poly_result = B(0, 0) + B(1, 0) * P(hh).x ^ 1 + B(2, 0) * P(hh).x ^ 2 + B(3, 0) * P(hh).x ^ 3 + B(4, 0) * P(hh).x ^ 4 + +B(5, 0) * P(hh).x ^ 5
+                Chart1.Series(1).Points.AddXY(P(hh).x, poly_result)
+            Next hh
+            Chart1.Refresh()
+        Catch ex As Exception
+            MessageBox.Show(ex.Message)  ' Show the exception's message.
+        End Try
     End Sub
 End Class
