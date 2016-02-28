@@ -9,7 +9,7 @@ Public Structure POINT
 End Structure
 '--------------------------------------------------------------------------------------------------
 ' Polynomial regression In VB.net (Visual Studio 2015 Windows Desktop)
-'   SEE http :  //www.vbforums.com/showthread.php?311225-Polynomials-Resolved&highlight=polynomials
+'   SEE http://www.vbforums.com/showthread.php?311225-Polynomials-Resolved&highlight=polynomials
 '
 '--------------------------------------------------------------------------------------------------
 
@@ -29,27 +29,20 @@ Public Class Form1
         draw_chart1()
     End Sub
 
-    Public Function Trend(Data() As POINT, ByVal Degree As Long) As POINT()
+    Public Function Trend(Data() As POINT, ByVal Degree As Integer) As POINT()
         'degree 1 = straight line y=a+bx
         'degree n = polynomials!!
 
-        Dim a(,) As Double
-        Dim Ai(,) As Double
-
-        Dim P(,) As Double
-        Dim SigmaA() As Double
-        Dim SigmaP() As Double
-        Dim PointCount As Long
-        Dim MaxTerm As Long
-        Dim m As Long, n As Long
-        Dim i As Long, j As Long
+        Dim a(,), Ai(,), P(,) As Double             '2 Dimensional arrays
+        Dim SigmaA(), SigmaP() As Double            '1 Dimensional arrays
+        Dim PointCount, MaxTerm, m, n, i, j As Integer
         Dim Ret() As POINT
         Dim Equation As String
 
         Degree = Degree + 1
 
         MaxTerm = (2 * (Degree - 1))
-        PointCount = UBound(Data) + 1
+        PointCount = Data.Length
 
         ReDim SigmaA(MaxTerm - 1)
         ReDim SigmaP(MaxTerm - 1)
@@ -92,14 +85,14 @@ Public Class Form1
 
         ' Work out non exponential first term
         For i = 0 To PointCount
-            Ret(i).X = Data(i).X
-            Ret(i).Y = B(0, 0)
+            Ret(i).x = Data(i).x
+            Ret(i).y = B(0, 0)
         Next
 
         ' Work out other exponential terms including exp 1
         For i = 0 To PointCount
             For j = 1 To Degree - 1
-                Ret(i).Y = Ret(i).Y + (B(j, 0) * Ret(i).X ^ j)
+                Ret(i).y = Ret(i).y + (B(j, 0) * Ret(i).x ^ j)
             Next
         Next
 
@@ -116,16 +109,14 @@ Public Class Form1
 
     Public Function MxMultiplyCV(Matrix1(,) As Double, ColumnVector(,) As Double) As Double(,)
 
-        Dim i As Long
-        Dim j As Long
-        Dim Rows As Long
-        Dim Cols As Long
-        Dim Ret(,) As Double
+        Dim i, j As Integer
+        Dim Rows, Cols As Integer
+        Dim Ret(,) As Double        '2 Dimensional array
 
-        Rows = UBound(Matrix1, 1)
-        Cols = UBound(Matrix1, 2)
+        Rows = Matrix1.GetLength(0) - 1
+        Cols = Matrix1.GetLength(1) - 1
 
-        ReDim Ret(UBound(ColumnVector, 1), 0) 'returns a column vector
+        ReDim Ret(ColumnVector.GetLength(0) - 1, 0) 'returns a column vector
 
         For i = 0 To Rows
             For j = 0 To Cols
@@ -137,18 +128,16 @@ Public Class Form1
     End Function
 
     Public Function MxInverse(Matrix(,) As Double) As Double(,)
-        Dim i As Long
-        Dim j As Long
-        Dim Rows As Long
-        Dim Cols As Long
-        Dim Tmp(,) As Double
-        Dim Ret(,) As Double
-        Dim Degree As Long
+        Dim i, j As Integer
+        Dim Rows, Cols As Integer          '1 Dimensional array
+        Dim Tmp(,), Ret(,) As Double    '2 Dimensional array
+        Dim Degree As Integer
 
         Tmp = Matrix
 
-        Rows = UBound(Tmp, 1)
-        Cols = UBound(Tmp, 2)
+        Rows = Tmp.GetLength(0) - 1     'First dimension of the array
+        Cols = Tmp.GetLength(1) - 1     'Second dimension of the array
+
         Degree = Cols + 1
 
         'Augment Identity matrix onto matrix M to get [M|I]
@@ -170,22 +159,21 @@ Public Class Form1
         Next
 
         MxInverse = Ret
-
     End Function
 
     Public Sub MxGaussJordan(Matrix(,) As Double)
 
-        Dim Rows As Long
-        Dim Cols As Long
-        Dim P As Long
-        Dim i As Long
-        Dim j As Long
+        Dim Rows As Integer
+        Dim Cols As Integer
+        Dim P As Integer
+        Dim i As Integer
+        Dim j As Integer
         Dim m As Double
         Dim d As Double
         Dim Pivot As Double
 
-        Rows = UBound(Matrix, 1)
-        Cols = UBound(Matrix, 2)
+        Rows = Matrix.GetLength(0) - 1     'First dimension of the array
+        Cols = Matrix.GetLength(1) - 1     'Second dimension of the array
 
         ' Reduce so we get the leading diagonal
         For P = 0 To Rows
@@ -259,7 +247,7 @@ Public Class Form1
             For hh = 0 To 32
                 Chart1.Series(0).Points.AddXY(P(hh).x, P(hh).y)
 
-                poly_result = B(0, 0) + B(1, 0) * P(hh).x ^ 1 + B(2, 0) * P(hh).x ^ 2 + B(3, 0) * P(hh).x ^ 3 + B(4, 0) * P(hh).x ^ 4 + +B(5, 0) * P(hh).x ^ 5
+                poly_result = B(0, 0) + B(1, 0) * P(hh).x ^ 1 + B(2, 0) * P(hh).x ^ 2 + B(3, 0) * P(hh).x ^ 3 + B(4, 0) * P(hh).x ^ 4 + B(5, 0) * P(hh).x ^ 5
                 Chart1.Series(1).Points.AddXY(P(hh).x, poly_result)
             Next hh
             Chart1.Refresh()
