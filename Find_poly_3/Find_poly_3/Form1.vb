@@ -3,7 +3,7 @@ Imports System
 Imports System.Configuration
 Imports System.Math
 
-Public Structure POINT
+Public Structure PPOINT
     Public x As Double
     Public y As Double
 End Structure
@@ -14,29 +14,29 @@ End Structure
 '--------------------------------------------------------------------------------------------------
 
 Public Class Form1
-    Public P(33) As POINT   'Raw data
+    Public PZ(33) As PPOINT   'Raw data
     Public B(,) As Double   'Poly Coefficients
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Dim j As Integer
-        Dim t() As POINT
+        Dim t() As PPOINT
 
-        For j = 0 To 32
-            P(j).x = j
-            P(j).y = CInt(Math.Ceiling(Rnd() * 50)) + 1
+        For j = 0 To 33
+            PZ(j).x = j
+            PZ(j).y = CInt(Math.Ceiling(Rnd() * 10)) ^ 2 + 1
         Next
-        t = Trend(P, 5)
+        t = Trend(PZ, 5)
         draw_chart1()
     End Sub
 
-    Public Function Trend(Data() As POINT, ByVal Degree As Integer) As POINT()
+    Public Function Trend(Data() As PPOINT, ByVal Degree As Integer) As PPOINT()
         'degree 1 = straight line y=a+bx
         'degree n = polynomials!!
 
-        Dim a(,), Ai(,), P(,) As Double             '2 Dimensional arrays
+        Dim a(,), Ai(,), MP(,) As Double             '2 Dimensional arrays
         Dim SigmaA(), SigmaP() As Double            '1 Dimensional arrays
         Dim PointCount, MaxTerm, m, n, i, j As Integer
-        Dim Ret() As POINT
+        Dim Ret() As PPOINT
         Dim Equation As String
 
         Degree = Degree + 1
@@ -70,14 +70,14 @@ Public Class Form1
         Next
 
         ' Create Matrix P, and fill in the coefficients
-        ReDim P(Degree - 1, 0)
+        ReDim MP(Degree - 1, 0)
         For i = 0 To (Degree - 1)
-            P(i, 0) = SigmaP(i)
+            MP(i, 0) = SigmaP(i)
         Next
 
-        ' We have A, and P of AB=P, so we can solve B because B=AiP
+        ' We have A, and MP of AB=MP, so we can solve B because B=AiP
         Ai = MxInverse(a)
-        B = MxMultiplyCV(Ai, P)
+        B = MxMultiplyCV(Ai, MP)
 
         ' Now we solve the equations and generate the list of points
         PointCount = PointCount - 1
@@ -85,14 +85,14 @@ Public Class Form1
 
         ' Work out non exponential first term
         For i = 0 To PointCount
-            Ret(i).x = Data(i).x
-            Ret(i).y = B(0, 0)
+            Ret(i).X = Data(i).x
+            Ret(i).Y = B(0, 0)
         Next
 
         ' Work out other exponential terms including exp 1
         For i = 0 To PointCount
             For j = 1 To Degree - 1
-                Ret(i).y = Ret(i).y + (B(j, 0) * Ret(i).x ^ j)
+                Ret(i).Y = Ret(i).Y + (B(j, 0) * Ret(i).X ^ j)
             Next
         Next
 
@@ -245,10 +245,10 @@ Public Class Form1
 
             '-------------------Chart data ---------------------
             For hh = 0 To 32
-                Chart1.Series(0).Points.AddXY(P(hh).x, P(hh).y)
+                Chart1.Series(0).Points.AddXY(PZ(hh).x, PZ(hh).y)
 
-                poly_result = B(0, 0) + B(1, 0) * P(hh).x ^ 1 + B(2, 0) * P(hh).x ^ 2 + B(3, 0) * P(hh).x ^ 3 + B(4, 0) * P(hh).x ^ 4 + B(5, 0) * P(hh).x ^ 5
-                Chart1.Series(1).Points.AddXY(P(hh).x, poly_result)
+                poly_result = B(0, 0) + B(1, 0) * PZ(hh).x ^ 1 + B(2, 0) * PZ(hh).x ^ 2 + B(3, 0) * PZ(hh).x ^ 3 + B(4, 0) * PZ(hh).x ^ 4 + B(5, 0) * PZ(hh).x ^ 5
+                Chart1.Series(1).Points.AddXY(PZ(hh).x, poly_result)
             Next hh
             Chart1.Refresh()
         Catch ex As Exception
