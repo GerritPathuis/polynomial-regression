@@ -14,18 +14,53 @@ End Structure
 '--------------------------------------------------------------------------------------------------
 
 Public Class Form1
-    Public PZ(33) As PPOINT   'Raw data
-    Public B(,) As Double   'Poly Coefficients
+    Public PZ1(33) As PPOINT  'Raw data
+
+    Public BQ(,) As Double   'Poly Coefficients
+    Dim words() As String
+
+    '-------------- Ventilatoren Schets T1E --------------------------
+    Dim TFlow() As Double = {0.00, 2.85, 3.8, 4.28, 4.75, 5.25, 5.7, 6.25, 6.65, 7.6, 8.55, 9.5}
+    Dim Tpstat() As Double = {3179.6, 3455.4, 3452.3, 3389.0, 3279.2, 3121.7, 2934.4, 2654.5, 2413.4, 1792.8, 1156.9, 475.0}
+    Dim Tptot() As Double = {3179.6, 3509.0, 3555.0, 3510.0, 3432.4, 3306.0, 3148.9, 2912.0, 2704.6, 2175.9, 1639.6, 1072.6}
+
+    '-------------- Cyclone, deeltje grootte verlies cijfers--------- 
+    Dim Max_Particle_dia() As Double = {2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35}
+    Dim ac300() As Double = {97.0, 76.0, 54.0, 45.0, 36.0, 29.0, 20.5, 14.0, 11.0, 8.4, 5.5, 4.2, 3.2}
+
+    '-------------- poly results--------------------------
+    Dim poly1() As Double = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+    Dim poly2() As Double = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Dim j As Integer
         Dim t() As PPOINT
 
-        For j = 0 To 33
-            PZ(j).x = j
-            PZ(j).y = CInt(Math.Ceiling(Rnd() * 10)) ^ 2 + 1
-        Next
-        t = Trend(PZ, 5)
+        'ReDim PZ1(TFlow.Length - 1)                'If PZ too big wrong results will result !!!!!!
+        ReDim PZ1(Max_Particle_dia.Length - 1)      'If PZ too big wrong results will result !!!!!!
+        '--------------------Ptotal------------------------------------
+        For j = 0 To (Max_Particle_dia.Length - 1)
+            'PZ1(j).x = TFlow(j)        'Fan data
+            'PZ1(j).y = Tptot(j)        'Fan data
+            PZ1(j).x = Max_Particle_dia(j) / 2      'Cyclone data
+            PZ1(j).y = ac300(j)                     'Cyclone data
+        Next j
+        t = Trend(PZ1, 5)
+        For j = 0 To (TFlow.Length - 1)
+            poly1(j) = BQ(0, 0) + BQ(1, 0) * PZ1(j).x ^ 1 + BQ(2, 0) * PZ1(j).x ^ 2 + BQ(3, 0) * PZ1(j).x ^ 3 + BQ(4, 0) * PZ1(j).x ^ 4 + BQ(5, 0) * PZ1(j).x ^ 5
+        Next j
+
+        ''-------------------Pstat------------------------------------
+        'For j = 0 To (TFlow.Length - 1)
+        '    PZ1(j).x = TFlow(j)
+        '    PZ1(j).y = Tpstat(j)
+        'Next j
+        't = Trend(PZ1, 5)
+        'For j = 0 To (TFlow.Length - 1)
+        '    poly2(j) = BQ(0, 0) + BQ(1, 0) * PZ1(j).x ^ 1 + BQ(2, 0) * PZ1(j).x ^ 2 + BQ(3, 0) * PZ1(j).x ^ 3 + BQ(4, 0) * PZ1(j).x ^ 4 + BQ(5, 0) * PZ1(j).x ^ 5
+        'Next j
+
+        '--------------------------------------------------------
         draw_chart1()
     End Sub
 
@@ -33,8 +68,9 @@ Public Class Form1
         'degree 1 = straight line y=a+bx
         'degree n = polynomials!!
 
+
         Dim a(,), Ai(,), MP(,) As Double             '2 Dimensional arrays
-        Dim SigmaA(), SigmaP() As Double            '1 Dimensional arrays
+        Dim SigmaA(), SigmaP() As Double             '1 Dimensional arrays
         Dim PointCount, MaxTerm, m, n, i, j As Integer
         Dim Ret() As PPOINT
         Dim Equation As String
@@ -69,7 +105,7 @@ Public Class Form1
             Next
         Next
 
-        ' Create Matrix P, and fill in the coefficients
+        ' Create Matrix MP, and fill in the coefficients
         ReDim MP(Degree - 1, 0)
         For i = 0 To (Degree - 1)
             MP(i, 0) = SigmaP(i)
@@ -77,7 +113,7 @@ Public Class Form1
 
         ' We have A, and MP of AB=MP, so we can solve B because B=AiP
         Ai = MxInverse(a)
-        B = MxMultiplyCV(Ai, MP)
+        BQ = MxMultiplyCV(Ai, MP)
 
         ' Now we solve the equations and generate the list of points
         PointCount = PointCount - 1
@@ -86,20 +122,20 @@ Public Class Form1
         ' Work out non exponential first term
         For i = 0 To PointCount
             Ret(i).X = Data(i).x
-            Ret(i).Y = B(0, 0)
+            Ret(i).y = BQ(0, 0)
         Next
 
         ' Work out other exponential terms including exp 1
         For i = 0 To PointCount
             For j = 1 To Degree - 1
-                Ret(i).Y = Ret(i).Y + (B(j, 0) * Ret(i).X ^ j)
+                Ret(i).y = Ret(i).y + (BQ(j, 0) * Ret(i).x ^ j)
             Next
         Next
 
         '-------- show the coefficients-------------
-        Equation = "y=" & Format$(B(0, 0), "0.00000") & " + "
-        For j = 1 To Degree - 1
-            Equation = Equation & Format$(B(j, 0), "0.00000") & "x^" & j & " + "
+        Equation = "y=" & Format$(BQ(0, 0), "0.000000000000") & " + "
+        For j = 1 To (Degree - 1)
+            Equation = Equation & Format$(BQ(j, 0), "0.000000000000") & "x^" & j & " + "
         Next
         Equation = Microsoft.VisualBasic.Left(Equation, Len(Equation) - 3)
         MessageBox.Show(Equation)
@@ -201,7 +237,6 @@ Public Class Form1
 
     Private Sub draw_chart1()
         Dim hh As Integer
-        Dim poly_result As Double
 
         Try
             'Clear all series And chart areas so we can re-add them
@@ -211,46 +246,46 @@ Public Class Form1
 
             Chart1.Series.Add("Series0")    'Input
             Chart1.Series.Add("Series1")    'Poly line
+            Chart1.Series.Add("Series2")    'Poly line
 
             Chart1.ChartAreas.Add("ChartArea0")
             Chart1.Series(0).ChartArea = "ChartArea0"
             Chart1.Series(1).ChartArea = "ChartArea0"
+            Chart1.Series(2).ChartArea = "ChartArea0"
 
             Chart1.Series(0).ChartType = DataVisualization.Charting.SeriesChartType.Line
             Chart1.Series(1).ChartType = DataVisualization.Charting.SeriesChartType.Line
+            Chart1.Series(2).ChartType = DataVisualization.Charting.SeriesChartType.Line
 
             Chart1.Titles.Add("Polynomial regression")
             Chart1.Titles(0).Font = New Font("Arial", 16, System.Drawing.FontStyle.Bold)
 
             Chart1.Series(0).Name = "Input"
-            Chart1.Series(1).Name = "Poly"
+            Chart1.Series(1).Name = "Poly1"
+            Chart1.Series(2).Name = "Poly2"
 
             Chart1.Series(0).Color = Color.Blue
             Chart1.Series(1).Color = Color.Red
+            Chart1.Series(2).Color = Color.Yellow
 
             '----------- labels on-off ------------------
             Chart1.Series(0).IsValueShownAsLabel = True
+            Chart1.Series(1).IsValueShownAsLabel = True
 
-            Chart1.Series(0).BorderWidth = 4
-            Chart1.Series(1).BorderWidth = 3
+            Chart1.Series(0).BorderWidth = 1
+            Chart1.Series(1).BorderWidth = 1
+            Chart1.Series(2).BorderWidth = 1
 
             Chart1.ChartAreas("ChartArea0").AxisX.Minimum = 0
             Chart1.ChartAreas("ChartArea0").AxisX.MinorTickMark.Enabled = True
-            Chart1.ChartAreas("ChartArea0").AxisY.MinorTickMark.Enabled = True
-            Chart1.ChartAreas("ChartArea0").AxisY2.MinorTickMark.Enabled = True
-
-            Chart1.ChartAreas("ChartArea0").AxisX.Title = "Debiet [Am3/s]"
-            Chart1.ChartAreas("ChartArea0").AxisY.Title = "Ptotaal [Pa]"
-            Chart1.ChartAreas("ChartArea0").AlignmentOrientation = DataVisualization.Charting.AreaAlignmentOrientations.Vertical
 
             '-------------------Chart data ---------------------
-            For hh = 0 To 32
-                Chart1.Series(0).Points.AddXY(PZ(hh).x, PZ(hh).y)
-
-                poly_result = B(0, 0) + B(1, 0) * PZ(hh).x ^ 1 + B(2, 0) * PZ(hh).x ^ 2 + B(3, 0) * PZ(hh).x ^ 3 + B(4, 0) * PZ(hh).x ^ 4 + B(5, 0) * PZ(hh).x ^ 5
-                Chart1.Series(1).Points.AddXY(PZ(hh).x, poly_result)
+            For hh = 0 To (TFlow.Length - 1)
+                'Chart1.Series(0).Points.AddXY(PZ1(hh).x, PZ1(hh).y)           'Present the Raw data
+                Chart1.Series(1).Points.AddXY(PZ1(hh).x, poly1(hh))
+                Chart1.Series(2).Points.AddXY(PZ1(hh).x, poly2(hh))
             Next hh
-            Chart1.Refresh()
+            'Chart1.Refresh()
         Catch ex As Exception
             MessageBox.Show(ex.Message)  ' Show the exception's message.
         End Try
